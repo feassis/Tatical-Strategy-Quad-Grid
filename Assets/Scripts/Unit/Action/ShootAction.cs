@@ -49,7 +49,8 @@ public class ShootAction : BaseAction
         {
             case State.Aiming:
                 Vector3 aimDirection = targetUnit.GetWorldPosition() - unit.GetWorldPosition();
-                transform.forward = Vector3.Lerp(transform.forward,
+                aimDirection.y = 0;
+                transform.forward = Vector3.Slerp(transform.forward,
                 aimDirection, Time.deltaTime * aimingRotationSpeed);
                 break;
             case State.Shooting:
@@ -118,51 +119,55 @@ public class ShootAction : BaseAction
         {
             for (int z = -MaxShootDistance; z <= MaxShootDistance; z++)
             {
-                GridPosition offsetGridPosition = new GridPosition(x, z);
-
-                GridPosition testGridPosition = unitPosition + offsetGridPosition;
-
-                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
+                for (int floor = -MaxShootDistance; floor < MaxShootDistance; floor++)
                 {
-                    continue;
+                    GridPosition offsetGridPosition = new GridPosition(x, z, floor);
+
+                    GridPosition testGridPosition = unitPosition + offsetGridPosition;
+
+                    if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
+                    {
+                        continue;
+                    }
+
+                    if (unitPosition == testGridPosition)
+                    {
+                        continue;
+                    }
+
+                    int testDistance = Mathf.Abs(x) + Mathf.Abs(z);
+
+                    if (testDistance > MaxShootDistance)
+                    {
+                        continue;
+                    }
+
+                    if (!LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
+                    {
+                        continue;
+                    }
+
+                    Unit targetUnit = LevelGrid.Instance.GetUnitOnGridPosition(testGridPosition);
+
+                    if (targetUnit.IsEnemy() == unit.IsEnemy())
+                    {
+                        continue;
+                    }
+
+                    Vector3 unitWorldPos = LevelGrid.Instance.GetWorldPosition(unitPosition);
+
+                    Vector3 shootDir = (targetUnit.GetWorldPosition() - unitWorldPos).normalized;
+                    bool hitSomething = Physics.Raycast(unitWorldPos + Vector3.up * unitShootHeight, shootDir,
+                        Vector3.Distance(unitWorldPos, targetUnit.GetWorldPosition()), obstaclesLayerMask);
+
+                    if (hitSomething)
+                    {
+                        continue;
+                    }
+
+                    validGridPositionList.Add(testGridPosition);
                 }
-
-                if (unitPosition == testGridPosition)
-                {
-                    continue;
-                }
-
-                int testDistance = Mathf.Abs(x) + Mathf.Abs(z);
-
-                if (testDistance > MaxShootDistance)
-                {
-                    continue;
-                }
-
-                if (!LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
-                {
-                    continue;
-                }
-
-                Unit targetUnit = LevelGrid.Instance.GetUnitOnGridPosition(testGridPosition);
-
-                if (targetUnit.IsEnemy() == unit.IsEnemy())
-                {
-                    continue;
-                }
-
-                Vector3 unitWorldPos = LevelGrid.Instance.GetWorldPosition(unitPosition);
-
-                Vector3 shootDir = (targetUnit.GetWorldPosition() - unitWorldPos).normalized;
-                bool hitSomething = Physics.Raycast(unitWorldPos + Vector3.up * unitShootHeight, shootDir,
-                    Vector3.Distance(unitWorldPos, targetUnit.GetWorldPosition()), obstaclesLayerMask);
-
-                if (hitSomething)
-                {
-                    continue;
-                }
-
-                validGridPositionList.Add(testGridPosition);
+                
             }
         }
 

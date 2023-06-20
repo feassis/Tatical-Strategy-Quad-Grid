@@ -524,6 +524,7 @@ GameObject:
   - component: {fileID: 9024657214230150971}
   - component: {fileID: 6249528158187444011}
   - component: {fileID: 9079171785411677351}
+  - component: {fileID: 7662100367709456680}
   m_Layer: 7
   m_Name: Unit
   m_TagString: Untagged
@@ -592,6 +593,7 @@ MonoBehaviour:
   moveSpeed: 4
   rotationSpeed: 10
   maxMoveDistance: 4
+  differentFloorTeleportDuration: 0.5
 --- !u!114 &2428469873757454294
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -628,7 +630,7 @@ MonoBehaviour:
   unitShootHeight: 1.7
   obstaclesLayerMask:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 320
 --- !u!114 &1262464947503024980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -723,6 +725,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unit: {fileID: 5209107319160509152}
   maxInteractDistance: 1
+--- !u!114 &7662100367709456680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5209107319160509182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c76950c3e58c0874b9258f5bfa31ac42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  floorHeightOffset: 2
+  isDinamicFloorPosition: 1
+  ignoreRenderer:
+  - {fileID: 7280380567056090972}
 --- !u!1 &5209564183728316722
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ public class GridSystemVisual : MonoBehaviour
     [SerializeField] private GridSystemVisualSingle gridSystemVisualSinglePrefab;
     [SerializeField] private List<GridVisualTypeMaterial> gridVisualTypeMaterialList;
 
-    private GridSystemVisualSingle[,] gridSystemVisualsArray;
+    private GridSystemVisualSingle[,,] gridSystemVisualsArray;
 
     [Serializable]
     public struct GridVisualTypeMaterial
@@ -49,24 +49,33 @@ public class GridSystemVisual : MonoBehaviour
     private void Start()
     {
         var gridSize = LevelGrid.Instance.GetLevelGridSize();
-        gridSystemVisualsArray = new GridSystemVisualSingle[gridSize.width, gridSize.height];
+        int floorAmount = LevelGrid.Instance.GetFloorAmount();
+        gridSystemVisualsArray = new GridSystemVisualSingle[gridSize.width, gridSize.height, floorAmount];
         
         for (int x = 0; x < gridSize.width; x++)
         {
             for (int z = 0; z < gridSize.height; z++)
             {
-                var gridVisual = Instantiate(gridSystemVisualSinglePrefab,
-                    LevelGrid.Instance.GetWorldPosition(new GridPosition(x, z)), Quaternion.identity);
-                gridVisual.transform.parent = transform;
-                gridVisual.Hide();
-                gridSystemVisualsArray[x, z] = gridVisual;
+                for (int floor = 0; floor < floorAmount; floor++)
+                {
+                    var gridVisual = Instantiate(gridSystemVisualSinglePrefab,
+                    LevelGrid.Instance.GetWorldPosition(new GridPosition(x, z, floor)), Quaternion.identity);
+                    gridVisual.transform.parent = transform;
+                    gridVisual.Hide();
+                    gridSystemVisualsArray[x, z, floor] = gridVisual;
+                }    
             }
         }
 
         UnitActionSystem.Instance.OnSelectedActionChanged += UnitActionSystem_OnSelectedActionChanged;
-        LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
+        UnitActionSystem.Instance.OnIsBusyChanged += UnitActionSystem_OnIsBusyChanged;
 
         UpdateGridVisual();
+    }
+
+    private void UnitActionSystem_OnIsBusyChanged(bool obj)
+    {
+        UpdateGridVisual(); ;
     }
 
     private void LevelGrid_OnAnyUnitMovedGridPosition(object sender, System.EventArgs e)
@@ -82,12 +91,16 @@ public class GridSystemVisual : MonoBehaviour
     public void HideAllGridVisuals()
     {
         var gridSize = LevelGrid.Instance.GetLevelGridSize();
+        int floorAmount = LevelGrid.Instance.GetFloorAmount();
 
         for (int x = 0; x < gridSize.width; x++)
         {
             for (int z = 0; z < gridSize.height; z++)
             {
-                gridSystemVisualsArray[x, z].Hide();
+                for (int floor = 0; floor < floorAmount; floor++)
+                {
+                    gridSystemVisualsArray[x, z, floor].Hide();
+                }    
             }
         }
     }
@@ -99,7 +112,7 @@ public class GridSystemVisual : MonoBehaviour
         {
             for (int z = -range; z <= range; z++)
             {
-                GridPosition testGridPosition = gridPosition + new GridPosition(x, z);
+                GridPosition testGridPosition = gridPosition + new GridPosition(x, z, 0);
                 int testDistance = Mathf.Abs(x) + Mathf.Abs(z);
 
                 if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
@@ -126,7 +139,7 @@ public class GridSystemVisual : MonoBehaviour
         {
             for (int z = -range; z <= range; z++)
             {
-                GridPosition testGridPosition = gridPosition + new GridPosition(x, z);
+                GridPosition testGridPosition = gridPosition + new GridPosition(x, z, 0);
                 int testDistance = Mathf.Abs(x) + Mathf.Abs(z);
 
                 if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
@@ -146,7 +159,7 @@ public class GridSystemVisual : MonoBehaviour
         Material gridMaterial = GetGridVisualTypeMaterial(type);
         foreach (var pos in gridPositions)
         {
-            gridSystemVisualsArray[pos.x, pos.z].Show(gridMaterial);
+            gridSystemVisualsArray[pos.x, pos.z, pos.floor].Show(gridMaterial);
         }
     }
 

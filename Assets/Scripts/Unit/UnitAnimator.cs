@@ -17,6 +17,7 @@ public class UnitAnimator : MonoBehaviour
         {
             moveAction.OnStartMoving += MoveAction_OnStartMoving;
             moveAction.OnStopMoving += MoveAction_OnStopMoving;
+            moveAction.OnChangeFloorStarted += MoveAction_OnChangeFloorStarted;
         }
 
         if (TryGetComponent<ShootAction>(out ShootAction shootAction))
@@ -31,6 +32,18 @@ public class UnitAnimator : MonoBehaviour
         }
 
         EquipRifle();
+    }
+
+    private void MoveAction_OnChangeFloorStarted(object sender, MoveAction.OnChangeFloorsStartedEventArgs e)
+    {
+        if(e.TargetGridPosition.floor > e.UnitGridPosition.floor)
+        {
+            animator.SetTrigger("JumpUp");
+        }
+        else
+        {
+            animator.SetTrigger("JumpDown");
+        }
     }
 
     private void SwordAction_OnSwordActionCompleted(object sender, EventArgs e)
@@ -51,7 +64,8 @@ public class UnitAnimator : MonoBehaviour
         BulletProjectile bulletPorjectile = Instantiate(bulletProjectilePrefab, shootPoint.position, Quaternion.identity);
 
         Vector3 targetShootAt = e.TargetUnit.GetWorldPosition();
-        targetShootAt.y = shootPoint.position.y;
+        float unitShoulderHeight = 1.7f;
+        targetShootAt.y += unitShoulderHeight;
 
         bulletPorjectile.Setup(targetShootAt);
     }
